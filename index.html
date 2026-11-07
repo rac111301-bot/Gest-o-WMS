@@ -1,23 +1,30 @@
-Atue como Arquiteto de Software Sênior e Especialista em Logística/WMS (Warehouse Management System). 
-Preciso que você crie o escopo, a arquitetura técnica e o código base para um **Sistema Didático de WMS com Mapa Interativo de Armazém**.
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-slate-900">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WMS Didático - Sistema de Gerenciamento de Armazém</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            900: '#0f172a',
+                            800: '#1e293b',
+                            700: '#334155',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="h-full text-slate-100 flex flex-col font-sans antialiased">
 
-O objetivo deste sistema é ser uma ferramenta educacional/prática para demonstrar o funcionamento logístico de um armazém (recebimento, endereçamento, estocagem, separação/picking e expedição) integrado a uma visualização gráfica interativa da planta do galpão.
-
-Por favor, estruture a resposta nos seguintes tópicos:
-
-1. Visão Geral e Módulos Principais
-   - Descreva os módulos essenciais (Gestão de Estoque, Endereçamento/Ruas/Prateleiras, Ordens de Entrada/Saída, e o Módulo de Mapa Interativo).
-
-2. Arquitetura Técnica Sugerida
-   - Recomende uma stack moderna e leve para prototipagem (ex: React ou Vue no Front-end, Node.js ou Python/FastAPI no Back-end, e uma biblioteca gráfica adequada para o mapa como Leaflet, Konva.js, SVG customizado ou D3.js).
-
-3. Modelagem de Dados Básica (Esquema)
-   - Apresente as principais entidades/tabelas necessárias (ex: `Armazem`, `Setor`, `Rua`, `Posicao/Endereco`, `Produto`, `Movimentacao`).
-
-4. Funcionalidades do Mapa Interativo
-   - Como o mapa deve se comportar (ex: visão 2D superior do armazém, cores indicando status das posições: livre, ocupada, bloqueada, com alerta; zoom/pan; clique em uma posição para ver os produtos armazenados nela; simulação visual de um operador ou rota de picking).
-
-5. Código Base Inicial (Exemplo Prático)
-   - Forneça um exemplo funcional (em HTML/CSS/JavaScript puro ou React simples) de um **mini-mapa interativo de armazém** em grade (Grid), onde cada célula represente um endereço (ex: Rua A, Pós 01) e mude de cor ao passar o mouse ou clicar, exibindo detalhes do produto em um painel lateral.
-
-Mantenha a explicação didática, limpa e focada em boas práticas de engenharia de software e logística.
+    <!-- Cabeçalho -->
+    <header class="bg-dark-800 border-b border-dark-700 px-6 py-4 flex items-center justify-between shadow-md
