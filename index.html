@@ -79,25 +79,25 @@
                     <h2 class="text-lg font-semibold mb-4 flex items-center">
                         <i class="fa-solid fa-cart-flatbed text-blue-500 mr-2"></i> Recebimento / Entrada de Mercadoria
                     </h2>
-                    <form id="form-recebimento" onsubmit="registrarEntrada(event)" class="space-y-4">
+                    <div class="space-y-4">
                         <div>
                             <label class="block text-xs font-medium text-slate-300 mb-1">Descrição do Produto (SKU)</label>
-                            <input type="text" id="prod-nome" required placeholder="Ex: Caixa de Salgados Congelados 40g" class="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+                            <input type="text" id="prod-nome" placeholder="Ex: Caixa de Salgados Congelados 40g" class="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-medium text-slate-300 mb-1">Quantidade</label>
-                                <input type="number" id="prod-qtd" min="1" required placeholder="Ex: 100" class="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+                                <input type="number" id="prod-qtd" min="1" placeholder="Ex: 100" class="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-slate-300 mb-1">Endereço (Ex: Rua-Bloco-Nível)</label>
-                                <input type="text" id="prod-endereco" required placeholder="Ex: A-01-02" class="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+                                <input type="text" id="prod-endereco" placeholder="Ex: A-01-02" class="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
                             </div>
                         </div>
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow">
+                        <button type="button" onclick="registrarEntrada()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow cursor-pointer">
                             <i class="fa-solid fa-plus mr-1"></i> Registrar Entrada no WMS
                         </button>
-                    </form>
+                    </div>
                 </div>
 
                 <!-- Estoque Atual / Endereçamento -->
@@ -115,7 +115,7 @@
                                     <th class="p-2.5 text-center">Ação</th>
                                 </tr>
                             </thead>
-                            <tbody id="tabela-estoque" class="divide-y divide-dark-700">
+                            <tbody id="tabela-estoque">
                                 <tr>
                                     <td colspan="4" class="p-4 text-center text-slate-500">Nenhum produto cadastrado no armazém.</td>
                                 </tr>
@@ -140,4 +140,125 @@
                                 <th class="p-2.5">Detalhes</th>
                             </tr>
                         </thead>
-                        <tbody id
+                        <tbody id="tabela-logs">
+                            <tr>
+                                <td colspan="3" class="p-4 text-center text-slate-500">Nenhuma movimentação registrada.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Rodapé -->
+    <footer class="bg-dark-800 border-t border-dark-700 py-3 px-6 text-center text-xs text-slate-500">
+        WMS Didático &copy; 2026 - Gestão de Armazéns e Logística
+    </footer>
+
+    <!-- Script de Funcionalidades WMS -->
+    <script>
+        let estoque = [];
+        let logs = [];
+
+        try {
+            const savedEstoque = localStorage.getItem('wms_estoque_v3');
+            const savedLogs = localStorage.getItem('wms_logs_v3');
+            if (savedEstoque) estoque = JSON.parse(savedEstoque);
+            if (savedLogs) logs = JSON.parse(savedLogs);
+        } catch (e) {
+            console.error("Erro ao carregar do localStorage:", e);
+        }
+
+        function atualizarSistema() {
+            const tabelaEstoque = document.getElementById('tabela-estoque');
+            const tabelaLogs = document.getElementById('tabela-logs');
+            
+            // Atualizar KPIs
+            document.getElementById('kpi-skus').innerText = estoque.length;
+            const totalPecas = estoque.reduce((acc, item) => acc + parseInt(item.qtd || 0), 0);
+            document.getElementById('kpi-estoque').innerText = totalPecas;
+            document.getElementById('kpi-enderecos').innerText = estoque.length;
+
+            // Renderizar Tabela de Estoque
+            if (estoque.length === 0) {
+                tabelaEstoque.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500">Nenhum produto cadastrado no armazém.</td></tr>`;
+            } else {
+                tabelaEstoque.innerHTML = estoque.map((item, index) => `
+                    <tr class="border-b border-dark-700 hover:bg-dark-700/50">
+                        <td class="p-2.5 font-medium text-white">${item.nome}</td>
+                        <td class="p-2.5">${item.qtd}</td>
+                        <td class="p-2.5"><span class="bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded text-xs font-mono">${item.endereco}</span></td>
+                        <td class="p-2.5 text-center">
+                            <button onclick="removerItem(${index})" class="text-red-400 hover:text-red-300 p-1 rounded transition cursor-pointer" title="Expedir / Dar Baixa">
+                                <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // Renderizar Logs
+            if (logs.length === 0) {
+                tabelaLogs.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500">Nenhuma movimentação registrada.</td></tr>`;
+            } else {
+                tabelaLogs.innerHTML = logs.map(log => `
+                    <tr class="border-b border-dark-700 hover:bg-dark-700/50">
+                        <td class="p-2.5 text-xs text-slate-400">${log.data}</td>
+                        <td class="p-2.5"><span class="px-2 py-0.5 rounded text-xs font-semibold ${log.tipo === 'ENTRADA' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}">${log.tipo}</span></td>
+                        <td class="p-2.5 text-xs">${log.detalhes}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // Salvar no navegador
+            try {
+                localStorage.setItem('wms_estoque_v3', JSON.stringify(estoque));
+                localStorage.setItem('wms_logs_v3', JSON.stringify(logs));
+            } catch (e) {
+                console.error("Erro ao salvar no localStorage:", e);
+            }
+        }
+
+        function registrarEntrada() {
+            const nomeInput = document.getElementById('prod-nome');
+            const qtdInput = document.getElementById('prod-qtd');
+            const enderecoInput = document.getElementById('prod-endereco');
+
+            const nome = nomeInput.value.trim();
+            const qtd = qtdInput.value.trim();
+            const endereco = enderecoInput.value.trim().toUpperCase();
+
+            if (!nome || !qtd || !endereco) {
+                alert('Por favor, preencha todos os campos do recebimento.');
+                return;
+            }
+
+            estoque.push({ nome, qtd, endereco });
+            
+            const agora = new Date().toLocaleString('pt-BR');
+            logs.unshift({ data: agora, tipo: 'ENTRADA', detalhes: `Recebimento de ${qtd} un. de "${nome}" no endereço ${endereco}` });
+
+            nomeInput.value = '';
+            qtdInput.value = '';
+            enderecoInput.value = '';
+
+            atualizarSistema();
+        }
+
+        function removerItem(index) {
+            const item = estoque[index];
+            if (confirm(`Deseja realizar a expedição (baixa) de "${item.nome}" do endereço ${item.endereco}?`)) {
+                estoque.splice(index, 1);
+                const agora = new Date().toLocaleString('pt-BR');
+                logs.unshift({ data: agora, tipo: 'EXPEDIÇÃO', detalhes: `Expedição de ${item.qtd} un. de "${item.nome}" do endereço ${item.endereco}` });
+                atualizarSistema();
+            }
+        }
+
+        // Inicializar dados na tela ao carregar
+        atualizarSistema();
+    </script>
+</body>
+</html>
