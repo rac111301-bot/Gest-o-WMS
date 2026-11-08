@@ -27,4 +27,117 @@
 <body class="h-full text-slate-100 flex flex-col font-sans antialiased">
 
     <!-- Cabeçalho -->
-    <header class="bg-dark-800 border-b border-dark-700 px-6 py-4 flex items-center justify-between shadow-md
+    <header class="bg-dark-800 border-b border-dark-700 px-6 py-4 flex items-center justify-between shadow-md">
+        <div class="flex items-center space-x-3">
+            <div class="bg-blue-600 p-2.5 rounded-lg text-white">
+                <i class="fa-solid fa-boxes-stacked text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold tracking-wide">WMS Didático</h1>
+                <p class="text-xs text-slate-400">Sistema de Gerenciamento de Armazém</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span class="text-sm text-slate-300 hidden sm:inline"><i class="fa-regular fa-user mr-2"></i>Operador / Aluno</span>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="flex-1 p-6 overflow-y-auto space-y-6">
+        <div class="max-w-7xl mx-auto space-y-6">
+
+            <!-- Cards de Indicadores (KPIs) -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-dark-800 border border-dark-700 rounded-xl p-5 shadow-lg flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase font-semibold">Total de SKUs</p>
+                        <h3 id="kpi-skus" class="text-2xl font-bold mt-1 text-white">0</h3>
+                    </div>
+                    <div class="bg-blue-500/10 text-blue-400 p-3 rounded-lg"><i class="fa-solid fa-box text-xl"></i></div>
+                </div>
+                <div class="bg-dark-800 border border-dark-700 rounded-xl p-5 shadow-lg flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase font-semibold">Itens em Estoque</p>
+                        <h3 id="kpi-estoque" class="text-2xl font-bold mt-1 text-white">0</h3>
+                    </div>
+                    <div class="bg-emerald-500/10 text-emerald-400 p-3 rounded-lg"><i class="fa-solid fa-cubes text-xl"></i></div>
+                </div>
+                <div class="bg-dark-800 border border-dark-700 rounded-xl p-5 shadow-lg flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase font-semibold">Endereços Ocupados</p>
+                        <h3 id="kpi-enderecos" class="text-2xl font-bold mt-1 text-white">0</h3>
+                    </div>
+                    <div class="bg-amber-500/10 text-amber-400 p-3 rounded-lg"><i class="fa-solid fa-warehouse text-xl"></i></div>
+                </div>
+            </div>
+
+            <!-- Grid de Ações: Recebimento e Expedição -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Formulário de Recebimento -->
+                <div class="bg-dark-800 border border-dark-700 rounded-xl p-6 shadow-lg">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa-solid fa-cart-flatbed text-blue-500 mr-2"></i> Recebimento / Entrada de Mercadoria
+                    </h2>
+                    <form id="form-recebimento" onsubmit="registrarEntrada(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Descrição do Produto (SKU)</label>
+                            <input type="text" id="prod-nome" required placeholder="Ex: Caixa de Salgados Congelados 40g" class="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Quantidade</label>
+                                <input type="number" id="prod-qtd" min="1" required placeholder="Ex: 100" class="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Endereço (Ex: Rua-Bloco-Nível)</label>
+                                <input type="text" id="prod-endereco" required placeholder="Ex: A-01-02" class="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow">
+                            <i class="fa-solid fa-plus mr-1"></i> Registrar Entrada no WMS
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Estoque Atual / Endereçamento -->
+                <div class="bg-dark-800 border border-dark-700 rounded-xl p-6 shadow-lg flex flex-col">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa-solid fa-boxes-packing text-emerald-500 mr-2"></i> Posições de Estoque Atuais
+                    </h2>
+                    <div class="flex-1 overflow-x-auto max-h-56 overflow-y-auto">
+                        <table class="w-full text-left text-sm text-slate-300">
+                            <thead class="bg-dark-900 text-slate-400 uppercase text-xs">
+                                <tr>
+                                    <th class="p-2.5">Produto</th>
+                                    <th class="p-2.5">Qtd</th>
+                                    <th class="p-2.5">Endereço</th>
+                                    <th class="p-2.5 text-center">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-estoque" class="divide-y divide-dark-700">
+                                <tr>
+                                    <td colspan="4" class="p-4 text-center text-slate-500">Nenhum produto cadastrado no armazém.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Histórico de Movimentações -->
+            <div class="bg-dark-800 border border-dark-700 rounded-xl p-6 shadow-lg">
+                <h2 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fa-solid fa-clock-rotate-left text-amber-500 mr-2"></i> Log de Auditoria / Movimentações
+                </h2>
+                <div class="overflow-x-auto max-h-48 overflow-y-auto">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-dark-900 text-slate-400 uppercase text-xs">
+                            <tr>
+                                <th class="p-2.5">Data/Hora</th>
+                                <th class="p-2.5">Operação</th>
+                                <th class="p-2.5">Detalhes</th>
+                            </tr>
+                        </thead>
+                        <tbody id
