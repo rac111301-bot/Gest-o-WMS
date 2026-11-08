@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WMS Didático - Sistema de Gerenciamento de Armazém</title>
+    <title>RC WMS & Logística Integrada - Sistema de Gerenciamento</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome para Ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jsPDF para exportação em PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -27,18 +29,34 @@
 <body class="h-full text-slate-100 flex flex-col font-sans antialiased">
 
     <!-- Cabeçalho -->
-    <header class="bg-dark-800 border-b border-dark-700 px-6 py-4 flex items-center justify-between shadow-md">
+    <header class="bg-dark-800 border-b border-dark-700 px-6 py-4 flex flex-col sm:flex-row items-center justify-between shadow-md gap-4">
         <div class="flex items-center space-x-3">
             <div class="bg-blue-600 p-2.5 rounded-lg text-white">
                 <i class="fa-solid fa-boxes-stacked text-xl"></i>
             </div>
             <div>
-                <h1 class="text-lg font-bold tracking-wide">WMS Didático</h1>
-                <p class="text-xs text-slate-400">Sistema de Gerenciamento de Armazém</p>
+                <h1 class="text-lg font-bold tracking-wide">RC WMS & Logística Integrada</h1>
+                <p class="text-xs text-slate-400">Armazém, Frotas, Relatórios e Rotas</p>
             </div>
         </div>
-        <div class="flex items-center space-x-4">
-            <span class="text-sm text-slate-300 hidden sm:inline"><i class="fa-regular fa-user mr-2"></i>Operador / Aluno</span>
+        
+        <!-- Navegação por Abas -->
+        <div class="flex space-x-2 bg-dark-900 p-1.5 rounded-xl border border-dark-700">
+            <button onclick="mudarAba('wms')" id="btn-tab-wms" class="px-4 py-2 rounded-lg text-xs font-semibold transition bg-blue-600 text-white cursor-pointer shadow">
+                <i class="fa-solid fa-warehouse mr-1.5"></i> Armazém & WMS
+            </button>
+            <button onclick="mudarAba('frotas')" id="btn-tab-frotas" class="px-4 py-2 rounded-lg text-xs font-semibold transition text-slate-400 hover:text-white cursor-pointer">
+                <i class="fa-solid fa-truck-fast mr-1.5"></i> Frotas & Rotas (Maps)
+            </button>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <button onclick="gerarPDF()" class="bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer" title="Exportar Relatório PDF">
+                <i class="fa-solid fa-file-pdf"></i> PDF
+            </button>
+            <button onclick="compartilharWhatsApp()" class="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer" title="Enviar Relatório via WhatsApp">
+                <i class="fa-brands fa-whatsapp"></i> WhatsApp
+            </button>
         </div>
     </header>
 
@@ -46,106 +64,173 @@
     <main class="flex-1 p-6 overflow-y-auto space-y-6">
         <div class="max-w-7xl mx-auto space-y-6">
 
-            <!-- Cards de Indicadores (KPIs) -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="bg-dark-800 border border-dark-700 rounded-xl p-5 shadow-lg flex items-center justify-between">
-                    <div>
-                        <p class="text-xs text-slate-400 uppercase font-semibold">Total de SKUs</p>
-                        <h3 id="kpi-skus" class="text-2xl font-bold mt-1 text-white">0</h3>
+            <!-- ================= ABA 1: WMS / ARMAZÉM ================= -->
+            <div id="secao-wms" class="space-y-6">
+                <!-- Cards de Indicadores (KPIs) -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-dark-800 border border-dark-700 rounded-xl p-5 shadow-lg flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-slate-400 uppercase font-semibold">Total de SKUs</p>
+                            <h3 id="kpi-skus" class="text-2xl font-bold mt-1 text-white">0</h3>
+                        </div>
+                        <div class="bg-blue-500/10 text-blue-400 p-3 rounded-lg"><i class="fa-solid fa-box text-xl"></i></div>
                     </div>
-                    <div class="bg-blue-500/10 text-blue-400 p-3 rounded-lg"><i class="fa-solid fa-box text-xl"></i></div>
-                </div>
-                <div class="bg-dark-800 border border-dark-700 rounded-xl p-5 shadow-lg flex items-center justify-between">
-                    <div>
-                        <p class="text-xs text-slate-400 uppercase font-semibold">Itens em Estoque</p>
-                        <h3 id="kpi-estoque" class="text-2xl font-bold mt-1 text-white">0</h3>
+                    <div class="bg-dark-800 border border-dark-700 rounded-xl p-5 shadow-lg flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-slate-400 uppercase font-semibold">Itens em Estoque</p>
+                            <h3 id="kpi-estoque" class="text-2xl font-bold mt-1 text-white">0</h3>
+                        </div>
+                        <div class="bg-emerald-500/10 text-emerald-400 p-3 rounded-lg"><i class="fa-solid fa-cubes text-xl"></i></div>
                     </div>
-                    <div class="bg-emerald-500/10 text-emerald-400 p-3 rounded-lg"><i class="fa-solid fa-cubes text-xl"></i></div>
-                </div>
-                <div class="bg-dark-800 border border-dark-700 rounded-xl p-5 shadow-lg flex items-center justify-between">
-                    <div>
-                        <p class="text-xs text-slate-400 uppercase font-semibold">Endereços Ocupados</p>
-                        <h3 id="kpi-enderecos" class="text-2xl font-bold mt-1 text-white">0</h3>
+                    <div class="bg-dark-800 border border-dark-700 rounded-xl p-5 shadow-lg flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-slate-400 uppercase font-semibold">Endereços Ocupados</p>
+                            <h3 id="kpi-enderecos" class="text-2xl font-bold mt-1 text-white">0</h3>
+                        </div>
+                        <div class="bg-amber-500/10 text-amber-400 p-3 rounded-lg"><i class="fa-solid fa-warehouse text-xl"></i></div>
                     </div>
-                    <div class="bg-amber-500/10 text-amber-400 p-3 rounded-lg"><i class="fa-solid fa-warehouse text-xl"></i></div>
                 </div>
-            </div>
 
-            <!-- Grid de Ações: Recebimento e Expedição -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                
-                <!-- Formulário de Recebimento -->
+                <!-- Grid de Ações: Recebimento e Estoque -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Formulário de Recebimento -->
+                    <div class="bg-dark-800 border border-dark-700 rounded-xl p-6 shadow-lg">
+                        <h2 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fa-solid fa-cart-flatbed text-blue-500 mr-2"></i> Recebimento / Entrada de Mercadoria
+                        </h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Descrição do Produto (SKU)</label>
+                                <input type="text" id="prod-nome" placeholder="Ex: Caixa de Salgados Congelados 40g" class="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Quantidade</label>
+                                    <input type="number" id="prod-qtd" min="1" placeholder="Ex: 100" class="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Endereço (Rua-Bloco-Nível)</label>
+                                    <input type="text" id="prod-endereco" placeholder="Ex: A-01-02" class="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+                                </div>
+                            </div>
+                            <button type="button" onclick="registrarEntrada()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow cursor-pointer">
+                                <i class="fa-solid fa-plus mr-1"></i> Registrar Entrada no WMS
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Estoque Atual -->
+                    <div class="bg-dark-800 border border-dark-700 rounded-xl p-6 shadow-lg flex flex-col">
+                        <h2 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fa-solid fa-boxes-packing text-emerald-500 mr-2"></i> Posições de Estoque Atuais
+                        </h2>
+                        <div class="flex-1 overflow-x-auto max-h-56 overflow-y-auto">
+                            <table class="w-full text-left text-sm text-slate-300">
+                                <thead class="bg-dark-900 text-slate-400 uppercase text-xs">
+                                    <tr>
+                                        <th class="p-2.5">Produto</th>
+                                        <th class="p-2.5">Qtd</th>
+                                        <th class="p-2.5">Endereço</th>
+                                        <th class="p-2.5 text-center">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-estoque">
+                                    <tr><td colspan="4" class="p-4 text-center text-slate-500">Nenhum produto cadastrado.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Histórico de Movimentações -->
                 <div class="bg-dark-800 border border-dark-700 rounded-xl p-6 shadow-lg">
                     <h2 class="text-lg font-semibold mb-4 flex items-center">
-                        <i class="fa-solid fa-cart-flatbed text-blue-500 mr-2"></i> Recebimento / Entrada de Mercadoria
+                        <i class="fa-solid fa-clock-rotate-left text-amber-500 mr-2"></i> Log de Auditoria / Movimentações
                     </h2>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Descrição do Produto (SKU)</label>
-                            <input type="text" id="prod-nome" placeholder="Ex: Caixa de Salgados Congelados 40g" class="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-medium text-slate-300 mb-1">Quantidade</label>
-                                <input type="number" id="prod-qtd" min="1" placeholder="Ex: 100" class="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-300 mb-1">Endereço (Ex: Rua-Bloco-Nível)</label>
-                                <input type="text" id="prod-endereco" placeholder="Ex: A-01-02" class="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
-                            </div>
-                        </div>
-                        <button type="button" onclick="registrarEntrada()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow cursor-pointer">
-                            <i class="fa-solid fa-plus mr-1"></i> Registrar Entrada no WMS
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Estoque Atual / Endereçamento -->
-                <div class="bg-dark-800 border border-dark-700 rounded-xl p-6 shadow-lg flex flex-col">
-                    <h2 class="text-lg font-semibold mb-4 flex items-center">
-                        <i class="fa-solid fa-boxes-packing text-emerald-500 mr-2"></i> Posições de Estoque Atuais
-                    </h2>
-                    <div class="flex-1 overflow-x-auto max-h-56 overflow-y-auto">
+                    <div class="overflow-x-auto max-h-48 overflow-y-auto">
                         <table class="w-full text-left text-sm text-slate-300">
                             <thead class="bg-dark-900 text-slate-400 uppercase text-xs">
                                 <tr>
-                                    <th class="p-2.5">Produto</th>
-                                    <th class="p-2.5">Qtd</th>
-                                    <th class="p-2.5">Endereço</th>
-                                    <th class="p-2.5 text-center">Ação</th>
+                                    <th class="p-2.5">Data/Hora</th>
+                                    <th class="p-2.5">Operação</th>
+                                    <th class="p-2.5">Detalhes</th>
                                 </tr>
                             </thead>
-                            <tbody id="tabela-estoque">
-                                <tr>
-                                    <td colspan="4" class="p-4 text-center text-slate-500">Nenhum produto cadastrado no armazém.</td>
-                                </tr>
+                            <tbody id="tabela-logs">
+                                <tr><td colspan="3" class="p-4 text-center text-slate-500">Nenhuma movimentação registrada.</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
-
             </div>
 
-            <!-- Histórico de Movimentações -->
-            <div class="bg-dark-800 border border-dark-700 rounded-xl p-6 shadow-lg">
-                <h2 class="text-lg font-semibold mb-4 flex items-center">
-                    <i class="fa-solid fa-clock-rotate-left text-amber-500 mr-2"></i> Log de Auditoria / Movimentações
-                </h2>
-                <div class="overflow-x-auto max-h-48 overflow-y-auto">
-                    <table class="w-full text-left text-sm text-slate-300">
-                        <thead class="bg-dark-900 text-slate-400 uppercase text-xs">
-                            <tr>
-                                <th class="p-2.5">Data/Hora</th>
-                                <th class="p-2.5">Operação</th>
-                                <th class="p-2.5">Detalhes</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela-logs">
-                            <tr>
-                                <td colspan="3" class="p-4 text-center text-slate-500">Nenhuma movimentação registrada.</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <!-- ================= ABA 2: FROTAS, CAMINHÕES & MAPAS ================= -->
+            <div id="secao-frotas" class="space-y-6 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Cadastro de Caminhão e Rota -->
+                    <div class="bg-dark-800 border border-dark-700 rounded-xl p-6 shadow-lg lg:col-span-1 space-y-4">
+                        <h2 class="text-lg font-semibold flex items-center">
+                            <i class="fa-solid fa-truck text-blue-500 mr-2"></i> Registro de Frota e Carga
+                        </h2>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Placa do Veículo</label>
+                            <input type="text" id="frota-placa" placeholder="Ex: ABC-1D23" class="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Nome do Motorista</label>
+                            <input type="text" id="frota-motorista" placeholder="Ex: Carlos Silva" class="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Destino / Rota (Endereço ou Cidade)</label>
+                            <input type="text" id="frota-destino" placeholder="Ex: Fortaleza, CE ou Pacajus - BR 116" class="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Carga Transportada</label>
+                            <input type="text" id="frota-carga" placeholder="Ex: 500 Caixas de Salgados" class="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <button type="button" onclick="registrarCaminhao()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow cursor-pointer">
+                            <i class="fa-solid fa-floppy-disk mr-1"></i> Cadastrar e Rastrear Veículo
+                        </button>
+                    </div>
+
+                    <!-- Lista de Caminhões Ativos e Integração com Maps -->
+                    <div class="bg-dark-800 border border-dark-700 rounded-xl p-6 shadow-lg lg:col-span-2 flex flex-col space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-semibold flex items-center">
+                                <i class="fa-solid fa-map-location-dot text-emerald-500 mr-2"></i> Controle de Frota & Visualizador Maps
+                            </h2>
+                            <span class="text-xs text-slate-400">Clique em "Rota" para carregar no Maps</span>
+                        </div>
+
+                        <!-- Tabela de Caminhões -->
+                        <div class="overflow-x-auto max-h-48 overflow-y-auto">
+                            <table class="w-full text-left text-sm text-slate-300">
+                                <thead class="bg-dark-900 text-slate-400 uppercase text-xs">
+                                    <tr>
+                                        <th class="p-2.5">Placa</th>
+                                        <th class="p-2.5">Motorista</th>
+                                        <th class="p-2.5">Destino</th>
+                                        <th class="p-2.5">Carga</th>
+                                        <th class="p-2.5 text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-frotas">
+                                    <tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum caminhão registrado na frota.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Janela Incorporada do Google Maps -->
+                        <div class="flex-1 min-h-[300px] bg-dark-900 border border-dark-700 rounded-xl overflow-hidden relative">
+                            <iframe id="mapa-iframe" 
+                                class="w-full h-full border-0 min-h-[300px]"
+                                loading="lazy"
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126584.28315189!2d-38.47!3d-4.18!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x7b8f00000000001%3A0x0!2sPacajus%2C+CE!5e0!3m2!1spt-BR!2sbr!4v1600000000000">
+                            </iframe>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -154,36 +239,57 @@
 
     <!-- Rodapé -->
     <footer class="bg-dark-800 border-t border-dark-700 py-3 px-6 text-center text-xs text-slate-500">
-        WMS Didático &copy; 2026 - Gestão de Armazéns e Logística
+        RC WMS & Logística Integrada &copy; 2026 - Desenvolvido por Rogério Alves Coelho
     </footer>
 
-    <!-- Script de Funcionalidades WMS -->
+    <!-- Script de Gerenciamento do Sistema -->
     <script>
         let estoque = [];
         let logs = [];
+        let frotas = [];
 
+        // Carregar dados salvos
         try {
-            const savedEstoque = localStorage.getItem('wms_estoque_v3');
-            const savedLogs = localStorage.getItem('wms_logs_v3');
-            if (savedEstoque) estoque = JSON.parse(savedEstoque);
-            if (savedLogs) logs = JSON.parse(savedLogs);
+            if (localStorage.getItem('rc_wms_estoque_v1')) estoque = JSON.parse(localStorage.getItem('rc_wms_estoque_v1'));
+            if (localStorage.getItem('rc_wms_logs_v1')) logs = JSON.parse(localStorage.getItem('rc_wms_logs_v1'));
+            if (localStorage.getItem('rc_wms_frotas_v1')) frotas = JSON.parse(localStorage.getItem('rc_wms_frotas_v1'));
         } catch (e) {
             console.error("Erro ao carregar do localStorage:", e);
+        }
+
+        function mudarAba(aba) {
+            const secWms = document.getElementById('secao-wms');
+            const secFrotas = document.getElementById('secao-frotas');
+            const btnWms = document.getElementById('btn-tab-wms');
+            const btnFrotas = document.getElementById('btn-tab-frotas');
+
+            if (aba === 'wms') {
+                secWms.classList.remove('hidden');
+                secFrotas.classList.add('hidden');
+                btnWms.className = "px-4 py-2 rounded-lg text-xs font-semibold transition bg-blue-600 text-white cursor-pointer shadow";
+                btnFrotas.className = "px-4 py-2 rounded-lg text-xs font-semibold transition text-slate-400 hover:text-white cursor-pointer";
+            } else {
+                secWms.classList.add('hidden');
+                secFrotas.classList.remove('hidden');
+                btnFrotas.className = "px-4 py-2 rounded-lg text-xs font-semibold transition bg-blue-600 text-white cursor-pointer shadow";
+                btnWms.className = "px-4 py-2 rounded-lg text-xs font-semibold transition text-slate-400 hover:text-white cursor-pointer";
+            }
         }
 
         function atualizarSistema() {
             const tabelaEstoque = document.getElementById('tabela-estoque');
             const tabelaLogs = document.getElementById('tabela-logs');
+            const tabelaFrotas = document.getElementById('tabela-frotas');
             
-            // Atualizar KPIs
+            // KPIs
             document.getElementById('kpi-skus').innerText = estoque.length;
             const totalPecas = estoque.reduce((acc, item) => acc + parseInt(item.qtd || 0), 0);
             document.getElementById('kpi-estoque').innerText = totalPecas;
             document.getElementById('kpi-enderecos').innerText = estoque.length;
 
-            // Renderizar Tabela de Estoque
+            // Tabela Estoque
             if (estoque.length === 0) {
-                tabelaEstoque.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500">Nenhum produto cadastrado no armazém.</td></tr>`;
+                tabelaEstoque.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500">Nenhum produto cadastrado.</td></tr>`;
             } else {
                 tabelaEstoque.innerHTML = estoque.map((item, index) => `
                     <tr class="border-b border-dark-700 hover:bg-dark-700/50">
@@ -199,7 +305,7 @@
                 `).join('');
             }
 
-            // Renderizar Logs
+            // Tabela Logs
             if (logs.length === 0) {
                 tabelaLogs.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500">Nenhuma movimentação registrada.</td></tr>`;
             } else {
@@ -212,12 +318,35 @@
                 `).join('');
             }
 
-            // Salvar no navegador
+            // Tabela Frotas
+            if (frotas.length === 0) {
+                tabelaFrotas.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum caminhão registrado.</td></tr>`;
+            } else {
+                tabelaFrotas.innerHTML = frotas.map((frota, index) => `
+                    <tr class="border-b border-dark-700 hover:bg-dark-700/50">
+                        <td class="p-2.5 font-mono font-bold text-white">${frota.placa}</td>
+                        <td class="p-2.5">${frota.motorista}</td>
+                        <td class="p-2.5"><span class="text-blue-400">${frota.destino}</span></td>
+                        <td class="p-2.5 text-xs">${frota.carga}</td>
+                        <td class="p-2.5 text-center flex items-center justify-center gap-2">
+                            <button onclick="verRotaMaps('${frota.destino}')" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 px-2 py-1 rounded text-xs transition cursor-pointer" title="Ver Rota no Maps">
+                                <i class="fa-solid fa-map"></i> Rota
+                            </button>
+                            <button onclick="removerCaminhao(${index})" class="text-red-400 hover:text-red-300 p-1 rounded transition cursor-pointer" title="Excluir Registro">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // Salvar localmente
             try {
-                localStorage.setItem('wms_estoque_v3', JSON.stringify(estoque));
-                localStorage.setItem('wms_logs_v3', JSON.stringify(logs));
+                localStorage.setItem('rc_wms_estoque_v1', JSON.stringify(estoque));
+                localStorage.setItem('rc_wms_logs_v1', JSON.stringify(logs));
+                localStorage.setItem('rc_wms_frotas_v1', JSON.stringify(frotas));
             } catch (e) {
-                console.error("Erro ao salvar no localStorage:", e);
+                console.error(e);
             }
         }
 
@@ -231,33 +360,169 @@
             const endereco = enderecoInput.value.trim().toUpperCase();
 
             if (!nome || !qtd || !endereco) {
-                alert('Por favor, preencha todos os campos do recebimento.');
+                alert('Por favor, preencha todos os campos.');
                 return;
             }
 
             estoque.push({ nome, qtd, endereco });
-            
             const agora = new Date().toLocaleString('pt-BR');
             logs.unshift({ data: agora, tipo: 'ENTRADA', detalhes: `Recebimento de ${qtd} un. de "${nome}" no endereço ${endereco}` });
 
             nomeInput.value = '';
             qtdInput.value = '';
             enderecoInput.value = '';
-
             atualizarSistema();
         }
 
         function removerItem(index) {
             const item = estoque[index];
-            if (confirm(`Deseja realizar a expedição (baixa) de "${item.nome}" do endereço ${item.endereco}?`)) {
+            if (confirm(`Deseja expedir "${item.nome}" do endereço ${item.endereco}?`)) {
                 estoque.splice(index, 1);
                 const agora = new Date().toLocaleString('pt-BR');
-                logs.unshift({ data: agora, tipo: 'EXPEDIÇÃO', detalhes: `Expedição de ${item.qtd} un. de "${item.nome}" do endereço ${item.endereco}` });
+                logs.unshift({ data: agora, tipo: 'EXPEDIÇÃO', detalhes: `Expedição de ${item.qtd} un. de "${item.nome}" no endereço ${item.endereco}` });
                 atualizarSistema();
             }
         }
 
-        // Inicializar dados na tela ao carregar
+        function registrarCaminhao() {
+            const placa = document.getElementById('frota-placa').value.trim().toUpperCase();
+            const motorista = document.getElementById('frota-motorista').value.trim();
+            const destino = document.getElementById('frota-destino').value.trim();
+            const carga = document.getElementById('frota-carga').value.trim();
+
+            if (!placa || !motorista || !destino || !carga) {
+                alert('Preencha todos os campos do veículo e da rota.');
+                return;
+            }
+
+            frotas.push({ placa, motorista, destino, carga });
+            
+            document.getElementById('frota-placa').value = '';
+            document.getElementById('frota-motorista').value = '';
+            document.getElementById('frota-destino').value = '';
+            document.getElementById('frota-carga').value = '';
+
+            atualizarSistema();
+            verRotaMaps(destino);
+        }
+
+        function removerCaminhao(index) {
+            if (confirm('Deseja remover este registro de frota?')) {
+                frotas.splice(index, 1);
+                atualizarSistema();
+            }
+        }
+
+        function verRotaMaps(destino) {
+            const iframe = document.getElementById('mapa-iframe');
+            const urlQuery = encodeURIComponent(destino);
+            iframe.src = `https://www.google.com/maps?q=${urlQuery}&output=embed`;
+            mudarAba('frotas');
+        }
+
+        // --- GERAÇÃO DE RELATÓRIO PDF ---
+        function gerarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFillColor(15, 23, 42); // Cor de fundo do cabeçalho
+            doc.rect(0, 0, 210, 30, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(16);
+            doc.text("RC WMS & Logística Integrada - Relatório Executivo", 14, 18);
+            
+            doc.setTextColor(100, 100, 100);
+            doc.setFontSize(10);
+            doc.text(`Emitido em: ${new Date().toLocaleString('pt-BR')}`, 14, 38);
+
+            // Resumo de Estoque
+            doc.setTextColor(15, 23, 42);
+            doc.setFontSize(12);
+            doc.text("1. Posições de Estoque Atuais:", 14, 48);
+
+            let y = 56;
+            doc.setFontSize(10);
+            if (estoque.length === 0) {
+                doc.text("Nenhum produto cadastrado no armazém.", 14, y);
+                y += 10;
+            } else {
+                doc.text("Produto", 14, y);
+                doc.text("Qtd", 120, y);
+                doc.text("Endereço", 150, y);
+                y += 6;
+                doc.line(14, y, 195, y);
+                y += 6;
+
+                estoque.forEach(item => {
+                    if (y > 270) { doc.addPage(); y = 20; }
+                    doc.text(String(item.nome), 14, y);
+                    doc.text(String(item.qtd), 120, y);
+                    doc.text(String(item.endereco), 150, y);
+                    y += 8;
+                });
+            }
+
+            // Resumo de Frotas
+            y += 10;
+            if (y > 250) { doc.addPage(); y = 20; }
+            doc.setFontSize(12);
+            doc.text("2. Controle de Frotas e Rotas Ativas:", 14, y);
+            y += 8;
+
+            if (frotas.length === 0) {
+                doc.setFontSize(10);
+                doc.text("Nenhum caminhão registrado.", 14, y);
+            } else {
+                doc.setFontSize(10);
+                doc.text("Placa", 14, y);
+                doc.text("Motorista", 50, y);
+                doc.text("Destino", 100, y);
+                doc.text("Carga", 150, y);
+                y += 6;
+                doc.line(14, y, 195, y);
+                y += 6;
+
+                frotas.forEach(f => {
+                    if (y > 270) { doc.addPage(); y = 20; }
+                    doc.text(String(f.placa), 14, y);
+                    doc.text(String(f.motorista), 50, y);
+                    doc.text(String(f.destino), 100, y);
+                    doc.text(String(f.carga), 150, y);
+                    y += 8;
+                });
+            }
+
+            // Salvar PDF
+            doc.save(`rc_wms_relatorio_${Date.now()}.pdf`);
+        }
+
+        // --- COMPARTILHAMENTO VIA WHATSAPP ---
+        function compartilharWhatsApp() {
+            let texto = `*📦 RC WMS & LOGÍSTICA INTEGRADA* 🚚\n_Data: ${new Date().toLocaleString('pt-BR')}_\n\n`;
+            
+            texto += `*--- ESTOQUE (${estoque.length} SKUs) ---*\n`;
+            if (estoque.length === 0) {
+                texto += `Nenhum item cadastrado.\n`;
+            } else {
+                estoque.forEach(item => {
+                    texto += `• ${item.nome} | Qtd: ${item.qtd} | End: ${item.endereco}\n`;
+                });
+            }
+
+            texto += `\n*--- FROTAS & ROTAS (${frotas.length} veículos) ---*\n`;
+            if (frotas.length === 0) {
+                texto += `Nenhum caminhão em rota.\n`;
+            } else {
+                frotas.forEach(f => {
+                    texto += `🚚 Placa: ${f.placa} | Motorista: ${f.motorista} | Destino: ${f.destino} | Carga: ${f.carga}\n`;
+                });
+            }
+
+            const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+            window.open(url, '_blank');
+        }
+
+        // Inicializar aplicação
         atualizarSistema();
     </script>
 </body>
